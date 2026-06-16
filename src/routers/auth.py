@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from src.db import get_db
 from src.models.user import User
 from src.auth.password import verify_password
+from src.auth.jwt import create_access_token
 from src.schemas.auth import LoginRequest
 
 router = APIRouter(
@@ -42,6 +43,9 @@ def login(
             detail="Invalid credentials"
         )
 
+    token = create_access_token(user.id)
+
     return {
-        "message": "Login successful"
+        "access_token": token,
+        "token_type": "Bearer"
     }

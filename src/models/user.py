@@ -1,4 +1,5 @@
 from sqlalchemy import Column
+from sqlalchemy import Boolean
 from sqlalchemy import Integer
 from sqlalchemy import String
 
@@ -22,5 +23,11 @@ class User(Base):
 
     password_hash = Column(
         String,
+        nullable=False
+    )
+
+    is_active = Column(
+        Boolean,
+        default=True,
         nullable=False
     )
