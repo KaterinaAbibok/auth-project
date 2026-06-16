@@ -2,8 +2,10 @@ from sqlalchemy import Column
 from sqlalchemy import Boolean
 from sqlalchemy import Integer
 from sqlalchemy import String
+from sqlalchemy.orm import relationship
 
 from src.db import Base
+from src.models.associations import user_roles
 
 
 class User(Base):
@@ -30,4 +32,10 @@ class User(Base):
         Boolean,
         default=True,
         nullable=False
+    )
+
+    roles = relationship(
+        "Role",
+        secondary=user_roles,
+        back_populates="users"
     )
