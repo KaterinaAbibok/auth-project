@@ -10,8 +10,8 @@ from src.models.permission import Permission
 from src.auth.password import hash_password
 
 router = APIRouter(
-    prefix="/test_data",
-    tags=["test_data"]
+    prefix="/seed",
+    tags=["seed"]
 )
 
 @router.post("")
