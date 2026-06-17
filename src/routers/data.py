@@ -7,14 +7,20 @@ from src.db import get_db
 from src.models.user import User
 from src.models.role import Role
 from src.models.permission import Permission
+from src.auth.password import hash_password
 
 router = APIRouter(
-    prefix="/data",
-    tags=["data"]
+    prefix="/test_data",
+    tags=["test_data"]
 )
 
-@router.get("")
+@router.post("")
 def seed(db: Session = Depends(get_db)):
+    if db.query(Role).first():
+        return {
+            "message": "Seed data already exists"
+        }
+
     admin_role = Role(
         name="ADMIN"
     )
@@ -62,13 +68,36 @@ def seed(db: Session = Depends(get_db)):
     user_role.permissions.append(
         p1
     )
-    user = (
-        db.query(User)
-        .filter(User.id == 1)
-        .first()
+    admin = User(
+        username="admin@test.com",
+        password_hash=hash_password("admin123"),
+        is_active=True
     )
-    user.roles.append(admin_role)
-    user.roles.append(user_role)
+
+    user1 = User(
+        username="user1@test.com",
+        password_hash=hash_password("user123"),
+        is_active=True
+    )
+
+    user2 = User(
+        username="user2@test.com",
+        password_hash=hash_password("user123"),
+        is_active=True
+    )
+
+    db.add_all([
+        admin_role,
+        user_role,
+        admin,
+        user1,
+        user2
+    ])
+
+    admin.roles.append(admin_role)
+
+    user1.roles.append(user_role)
+    user2.roles.append(user_role)
     db.commit()
 
     return {
