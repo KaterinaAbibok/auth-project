@@ -11,6 +11,7 @@ from src.schemas.user import UserResponse
 
 from src.auth.password import hash_password
 from src.auth.dependencies import get_current_user
+from src.auth.authorization import require_permission
 
 router = APIRouter(
     prefix="/users",
@@ -63,3 +64,26 @@ def create_user(
     db.refresh(user)
 
     return user
+
+@router.delete("/{user_id}")
+def delete_user(
+    user_id: int,
+    current_user=Depends(
+            require_permission(
+                "USER",
+                "DELETE"
+            )),
+    db: Session = Depends(get_db)
+):
+    user = (
+        db.query(User)
+        .filter(User.id == user_id)
+        .first()
+    )
+    user.is_active = False
+
+    db.commit()
+
+    return {
+        "message": f"User {user_id} deactivated"
+    }

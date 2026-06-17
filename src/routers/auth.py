@@ -35,6 +35,12 @@ def login(
             detail="Invalid credentials"
         )
 
+    if not user.is_active:
+        raise HTTPException(
+            status_code=401,
+            detail="User is inactive"
+        )
+
     if not verify_password(
             request.password,
             user.password_hash):
