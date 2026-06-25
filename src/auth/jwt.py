@@ -2,10 +2,7 @@ import jwt
 from datetime import datetime
 from datetime import timedelta
 
-SECRET_KEY = "test-secret-key"
-ALGORITHM = "HS256"
-
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+from src.auth.config import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
 
 
 def create_access_token(user_id: int) -> str:

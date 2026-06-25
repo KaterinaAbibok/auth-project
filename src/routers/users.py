@@ -6,11 +6,11 @@ from sqlalchemy.orm import Session
 
 from src.db import get_db
 from src.models.user import User
+from src.models.role import Role
 from src.schemas.user import UserCreate
 from src.schemas.user import UserResponse
 
 from src.auth.password import hash_password
-from src.auth.dependencies import get_current_user
 from src.auth.authorization import require_permission
 
 router = APIRouter(
@@ -18,13 +18,16 @@ router = APIRouter(
     tags=["Users"]
 )
 
+user_read_permission = require_permission("USER", "READ")
+user_update_permission = require_permission("USER", "UPDATE")
+user_delete_permission = require_permission("USER", "DELETE")
 
 @router.get(
     "",
     response_model=list[UserResponse]
 )
 def get_users(
-    current_user=Depends(get_current_user),
+    current_user=Depends(user_read_permission),
     db: Session = Depends(get_db)
 ):
     users = db.query(User).all()
@@ -38,6 +41,7 @@ def get_users(
 )
 def create_user(
         request: UserCreate,
+        current_user=Depends(user_update_permission),
         db: Session = Depends(get_db)
 ):
     existing_user = (
@@ -59,6 +63,10 @@ def create_user(
         )
     )
 
+    user_role = db.query(Role).filter(Role.name == "USER").first()
+    if not user_role:
+        raise ValueError("Role USER not found in DB")
+    user.roles.append(user_role)
     db.add(user)
     db.commit()
     db.refresh(user)
@@ -68,11 +76,7 @@ def create_user(
 @router.delete("/{user_id}")
 def delete_user(
     user_id: int,
-    current_user=Depends(
-            require_permission(
-                "USER",
-                "DELETE"
-            )),
+    current_user=Depends(user_delete_permission),
     db: Session = Depends(get_db)
 ):
     user = (
@@ -80,8 +84,10 @@ def delete_user(
         .filter(User.id == user_id)
         .first()
     )
-    user.is_active = False
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
 
+    user.is_active = False
     db.commit()
 
     return {

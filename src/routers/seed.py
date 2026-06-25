@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 from fastapi import Depends
 from fastapi import APIRouter
 
+from src.models.document import Document
 from src.db import get_db
 
 from src.models.user import User
@@ -49,6 +50,11 @@ def seed(db: Session = Depends(get_db)):
 
     p4 = Permission(
         resource="USER",
+        action="UPDATE"
+    )
+
+    p5 = Permission(
+        resource="USER",
         action="DELETE"
     )
 
@@ -56,14 +62,16 @@ def seed(db: Session = Depends(get_db)):
         p1,
         p2,
         p3,
-        p4
+        p4,
+        p5
     ])
 
     admin_role.permissions.extend([
         p1,
         p2,
         p3,
-        p4
+        p4,
+        p5
     ])
     user_role.permissions.append(
         p1
@@ -98,6 +106,16 @@ def seed(db: Session = Depends(get_db)):
 
     user1.roles.append(user_role)
     user2.roles.append(user_role)
+
+    d1 = Document(
+        type="Contract"
+    )
+    d2 = Document(
+        type="Invoice"
+    )
+    db.add(d1)
+    db.add(d2)
+
     db.commit()
 
     return {
